@@ -1,3 +1,4 @@
+{{-- お気に入り --}}
 @extends('layouts.app')
 
 @section('content')
@@ -9,9 +10,12 @@
         <div class="col-sm-8">
             {{-- タブ --}}
             @include('users.navtabs')
-            {{-- ユーザ一覧 --}}
-            @include('users.users')
+            {{-- 投稿一覧 --}}
+             @include('microposts.microposts')
             
+           {{--  @include('user_favorite.favorite_button') --}}
         </div>
+        
     </div>
+       
 @endsection

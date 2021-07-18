@@ -75,7 +75,7 @@ class User extends Authenticatable
      */
     public function loadRelationshipCounts()
     {
-         $this->loadCount(['microposts', 'followings', 'followers']);
+         $this->loadCount(['microposts', 'followings', 'followers', 'favorites']);
     }
     
     
@@ -140,7 +140,8 @@ class User extends Authenticatable
     }
     
     
-        public function feed_microposts()
+     public function feed_microposts()
+     
     {
         // このユーザがフォロー中のユーザのidを取得して配列にする
           /**
@@ -149,11 +150,66 @@ class User extends Authenticatable
          * pluck() は引数として与えられたテーブルのカラムの値だけを抜き出す命令
          * 
          */ 
+    // このユーザがフォロー中のユーザのidを取得して配列にする
         $userIds = $this->followings()->pluck('users.id')->toArray();
         // このユーザのidもその配列に追加
         $userIds[] = $this->id;
         // それらのユーザが所有する投稿に絞り込む
         return Micropost::whereIn('user_id', $userIds);
     }
+    
+    /**　::(スコープ定義演算子)
+     * 　クラス変数やクラスメソッドには、アロー演算子が使えない
+     * 　その代わりに::(スコープ演算子)を使う
+     * belongsToMany()関数　多対多の関係を記述
+     * 今回はUserとMicropostの関係のため
+     * MicropostのモデルファイルにもbelongsToMany()メソッドを記述
+     * 
+     */ 
+    public function favorites()
+    {
+        return $this->belongsToMany(Micropost::class, 'favorites', 'user_id', 'micropost_id')->withTimestamps();
+    }
+  
+    
+    /**
+     * お気に入り登録、解除できるようfavorite(),unfavorite()メソッドを記述
+     */
+    public function favorite($userId)
+    {
+        //すでにお気に入りしているか確認
+        $exist = $this->is_favorite($userId);
+        //対象が自分自身かどうかの確認
+        $its_me = $this->id == $userId;
+        // || どちらかがtrueならtrue
+        if ($exist || $its_me) {
+        //すでにお気に入りしていれば何もしない
+            return false;
+        }else {
+            $this->favorites()->attach($userId);
+            return true;
+        }
+        
+    }
+    
+    public function unfavorite($userId)
+    {
+        $exist = $this->is_favorite($userId);
+        
+        $its_me = $this->id == $userId;
+        // && どちらもtrueならtrue　!$its_meがfalseならtrue
+        if ($exist && !$its_me) {
+            
+            $this->favorites()->detach($userId);
+            return true;
+        } else {
+            return false;
+        } 
+        
+    }
+  
+    public function is_favorite($userId)
+    {
+        return $this->favorites()->where('micropost_id', $userId)->exists();
+    }
 }
-

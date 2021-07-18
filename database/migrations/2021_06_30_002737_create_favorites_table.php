@@ -19,12 +19,12 @@ class CreateFavoritesTable extends Migration
             $table->unsignedBigInteger('micropost_id');
             $table->timestamps();
             
-          // 外部キー制約
-         $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');   
-         $table->foreign('micropost_id')->references('id')->on('users')->onDelete('cascade');
+          // 外部キー制約 onDelete('cascade') 参照先のデータが消えたら一緒に消える
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');   
+            $table->foreign('micropost_id')->references('id')->on('users')->onDelete('cascade');
          
          // user_idとmicropost_idの組み合わせの重複を許さない
-         $table->unique(['user_id', 'micropost_id']); 
+            $table->unique(['user_id', 'micropost_id']); 
         });
     }
 
